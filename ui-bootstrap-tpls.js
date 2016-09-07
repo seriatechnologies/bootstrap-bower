@@ -6879,15 +6879,45 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.debounce', 'ui.bootstrap
        * shift + tab is pressed to bring focus to the previous element
        * then clear the results
        */
-      if (scope.activeIdx === -1 && shouldSelect || evt.which === 9 && !!evt.shiftKey) {
-        resetMatches();
-        scope.$digest();
-        return;
+      if (scope.activeIdx === -1 && (evt.which === 9 || evt.which === 13) || evt.which === 9 && !!evt.shiftKey) {
+          resetMatches();
+          scope.$digest();
+          return;
       }
-
       evt.preventDefault();
       var target;
       switch (evt.which) {
+          // added case for tab
+          case 9:
+              scope.$apply(function () {
+                  if (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate)) {
+                      $$debounce(function () {
+                          scope.select(scope.activeIdx, evt);
+                      }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
+                  } else {
+                      scope.select(scope.activeIdx, evt);
+                  }
+              });
+
+              $timeout(function () {
+                  var $canfocus = $(':focusable');
+                  var index = $canfocus.index(document.activeElement) + 1;
+                  if (index >= $canfocus.length) index = 0;
+                  $canfocus.eq(index).focus();
+                  $canfocus.eq(index).select();
+              }, 50);
+              break;
+          case 13:
+              scope.$apply(function () {
+                  if (angular.isNumber(scope.debounceUpdate) || angular.isObject(scope.debounceUpdate)) {
+                      $$debounce(function () {
+                          scope.select(scope.activeIdx, evt);
+                      }, angular.isNumber(scope.debounceUpdate) ? scope.debounceUpdate : scope.debounceUpdate['default']);
+                  } else {
+                      scope.select(scope.activeIdx, evt);
+                  }
+              });
+              break;
         case 27: // escape
           evt.stopPropagation();
 
